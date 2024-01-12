@@ -18,4 +18,7 @@ main = hakyllWith config $ do
             relativizeUrls
 
     match "templates/*" $ compile templateCompiler
-    match "CNAME" $ route idRoute >> compile copyFileCompiler
+
+    match ("*.png" .||. "CNAME" .||. "favicon.ico" .||. "site.webmanifest")$ do
+        route idRoute
+        compile copyFileCompiler
