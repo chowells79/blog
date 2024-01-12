@@ -19,10 +19,14 @@ main = hakyllWith config $ do
 
     match "templates/*" $ compile templateCompiler
 
-    match ("*.png" .||. "CNAME" .||. "favicon.ico" .||. "site.webmanifest")$ do
+    match ("*.png" .||. "favicon.ico") $ do
         route idRoute
         compile copyFileCompiler
 
     create [".nojekyll"] $ do
         route idRoute
         compile $ makeItem ("" :: String)
+
+    create ["CNAME"] $ do
+        route idRoute
+        compile $ makeItem ("blog.adjoint.us" :: String)
