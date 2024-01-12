@@ -22,3 +22,7 @@ main = hakyllWith config $ do
     match ("*.png" .||. "CNAME" .||. "favicon.ico" .||. "site.webmanifest")$ do
         route idRoute
         compile copyFileCompiler
+
+    create [".nojekyll"] $ do
+        route idRoute
+        compile $ makeItem ("" :: String)
