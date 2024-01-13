@@ -3,16 +3,24 @@ module Main where
 
 import Hakyll
 
+import Data.Foldable (for_)
+import Data.Char (toLower)
+import Data.String (IsString(..))
+
 config :: Configuration
 config = defaultConfiguration
     { destinationDirectory = "docs"
-    , ignoreFile = const False
+    , ignoreFile = \f -> case f of ('.':_) -> False ; _ -> ignoreFile defaultConfiguration f
     , providerDirectory = "content"
     }
 
-staticFiles :: Pattern
-staticFiles = foldr1 (.||.) [image, font, stylesheet, javascript, github]
+
+staticFiles :: Rules ()
+staticFiles =  match pat $ do
+    route idRoute
+    compile copyFileCompiler
   where
+    pat = foldr1 (.||.) [image, font, stylesheet, javascript, github]
     font = "fonts/**" .&&. ("**.ttf" .||. "**.otf" .||. "**.woff" .||. "**.woff2")
     stylesheet = "css/**" .&&. "**.css"
     javascript = "js/**" .&&. "**.js"
@@ -20,17 +28,34 @@ staticFiles = foldr1 (.||.) [image, font, stylesheet, javascript, github]
     github = ".nojekyll" .||. "CNAME"
 
 
-main :: IO ()
-main = hakyllWith config $ do
+createMaterialSymbols :: Rules ()
+createMaterialSymbols = for_ ["Sharp", "Outlined", "Rounded"] $ \shape -> do
+    let name = "css/material-symbols-" ++ map toLower shape ++ ".css"
+    create [fromString name] $ do
+        route idRoute
+        compile $ do
+            let context = constField "shape" shape
+            empty <- makeItem ("" :: String)
+            loadAndApplyTemplate "templates/material-symbols.css" context empty
+
+
+markdownToHTML :: Rules ()
+markdownToHTML =
     match "*.md" $ do
         route $ setExtension ".html"
         compile $ do
-            c <- pandocCompiler
-            fullPage <- loadAndApplyTemplate "templates/default.html" defaultContext c
+            pandoc <- pandocCompiler
+            fullPage <- loadAndApplyTemplate "templates/default.html" defaultContext pandoc
             relativizeUrls fullPage
 
-    match "templates/*" $ compile templateCompiler
 
-    match staticFiles $ do
-        route idRoute
-        compile copyFileCompiler
+loadTemplates :: Rules ()
+loadTemplates = match "templates/**" $ compile templateCompiler
+
+
+main :: IO ()
+main = hakyllWith config $ do
+    loadTemplates
+    createMaterialSymbols
+    markdownToHTML
+    staticFiles
