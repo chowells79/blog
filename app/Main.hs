@@ -36,7 +36,8 @@ createMaterialSymbols = for_ ["Sharp", "Outlined", "Rounded"] $ \shape -> do
         compile $ do
             let context = constField "shape" shape
             empty <- makeItem ("" :: String)
-            loadAndApplyTemplate "templates/material-symbols.css" context empty
+            expanded <- loadAndApplyTemplate "templates/material-symbols.css" context empty
+            pure $ compressCss <$> expanded
 
 
 markdownToHTML :: Rules ()
@@ -45,8 +46,8 @@ markdownToHTML =
         route $ setExtension ".html"
         compile $ do
             pandoc <- pandocCompiler
-            fullPage <- loadAndApplyTemplate "templates/default.html" defaultContext pandoc
-            relativizeUrls fullPage
+            expanded <- loadAndApplyTemplate "templates/default.html" defaultContext pandoc
+            relativizeUrls expanded
 
 
 loadTemplates :: Rules ()
