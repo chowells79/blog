@@ -8,7 +8,7 @@
     url(/fonts/MaterialSymbols$shape$.ttf) format('truetype');
 }
 
-.material-icons {
+.material-symbols-$lshape$ {
   font-family: 'Material Symbols';
   font-weight: normal;
   font-style: normal;

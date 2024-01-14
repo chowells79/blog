@@ -30,11 +30,13 @@ staticFiles =  match pat $ do
 
 createMaterialSymbols :: Rules ()
 createMaterialSymbols = for_ ["Sharp", "Outlined", "Rounded"] $ \shape -> do
-    let name = "css/material-symbols-" ++ map toLower shape ++ ".css"
+    let lshape = map toLower shape
+        name = "css/material-symbols-" ++ lshape ++ ".css"
     create [fromString name] $ do
         route idRoute
         compile $ do
-            let context = constField "shape" shape
+            let context = constField "shape" shape <>
+                          constField "lshape" lshape
                 tpl = "templates/material-symbols.css"
             empty <- makeItem ("" :: String)
             expanded <- loadAndApplyTemplate tpl context empty
