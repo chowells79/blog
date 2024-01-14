@@ -1,15 +1,15 @@
 @font-face {
-  font-family: 'Material Symbols';
+  font-family: 'Material Symbols $shape$';
   font-style: normal;
   font-weight: 400;
-  src: local('Material Symbols'),
+  src: local('Material Symbols $shape$'),
     local('MaterialSymbols$shape$'),
     url(/fonts/MaterialSymbols$shape$.woff2) format('woff2'),
     url(/fonts/MaterialSymbols$shape$.ttf) format('truetype');
 }
 
 .material-symbols-$lshape$ {
-  font-family: 'Material Symbols';
+  font-family: 'Material Symbols $shape$';
   font-weight: normal;
   font-style: normal;
   font-size: 24px;  /* Preferred icon size */

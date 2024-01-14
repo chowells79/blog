@@ -3,9 +3,8 @@ module Main where
 
 import Hakyll
 
-import Data.Foldable (for_)
 import Data.Char (toLower)
-import Data.String (IsString(..))
+import Data.Traversable (for)
 
 config :: Configuration
 config = defaultConfiguration
@@ -29,18 +28,18 @@ staticFiles =  match pat $ do
 
 
 createMaterialSymbols :: Rules ()
-createMaterialSymbols = for_ ["Sharp", "Outlined", "Rounded"] $ \shape -> do
-    let lshape = map toLower shape
-        name = "css/material-symbols-" ++ lshape ++ ".css"
-    create [fromString name] $ do
-        route idRoute
-        compile $ do
-            let context = constField "shape" shape <>
+createMaterialSymbols = create ["css/material-symbols.css"] $ do
+    route idRoute
+    compile $ do
+        tpl <- loadBody "templates/material-symbols.css"
+        empty <- makeItem ()
+        parts <- for ["Sharp", "Outlined", "Rounded"] $ \shape -> do
+            let lshape = map toLower shape
+                context = constField "shape" shape <>
                           constField "lshape" lshape
-                tpl = "templates/material-symbols.css"
-            empty <- makeItem ("" :: String)
-            expanded <- loadAndApplyTemplate tpl context empty
-            pure $ compressCss <$> expanded
+            applyTemplate tpl context empty
+        let whole = concatMap itemBody parts
+        makeItem $ compressCss whole
 
 
 markdownToHTML :: Rules ()
