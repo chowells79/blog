@@ -3,7 +3,7 @@ module Main where
 
 import Hakyll
 
-import SkylightingCss (skylightingCss)
+import Hakyll.SkylightingCss (skylightingCssCompiler)
 
 config :: Configuration
 config = defaultConfiguration
@@ -69,14 +69,7 @@ loadConfigs = match "config/**" $ compile getResourceString
 skylighting :: Rules ()
 skylighting = create ["css/skylighting.css"] $ do
     route $ constRoute "css/skylighting.css"
-    compile $ do
-        style <- loadBody "config/skylighting-style"
-        case skylightingCss style of
-            Just css -> makeItem $ compressCss css
-            Nothing -> noResult $
-                "unable to generate syntax highlighting " ++
-                "for the style named \"" ++ style ++ "\""
-
+    compile $ loadBody "config/skylighting-style" >>= skylightingCssCompiler
 
 main :: IO ()
 main = hakyllWith config $ do

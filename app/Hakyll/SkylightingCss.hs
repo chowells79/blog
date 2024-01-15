@@ -1,9 +1,8 @@
-module SkylightingCss
-  ( skylightingCss
+module Hakyll.SkylightingCss
+  ( skylightingCssCompiler
   ) where
 
-import Data.Char (isSpace)
-import Data.List (dropWhileEnd)
+import Hakyll
 
 import Skylighting.Format.HTML
 import Skylighting.Styles
@@ -12,8 +11,7 @@ import Skylighting.Styles
 skylightingCss :: String -> Maybe String
 skylightingCss name = styleToCss <$> style
   where
-    stripped = dropWhile isSpace . dropWhileEnd isSpace $ name
-    style = case stripped of
+    style = case name of
               "kate"       -> Just kate
               "breezeDark" -> Just breezeDark
               "pygments"   -> Just pygments
@@ -23,3 +21,13 @@ skylightingCss name = styleToCss <$> style
               "monochrome" -> Just monochrome
               "zenburn"    -> Just zenburn
               _ -> Nothing
+
+
+skylightingCssCompiler :: String -> Compiler (Item String)
+skylightingCssCompiler name =
+    case skylightingCss shortName of
+        Just css -> makeItem $ compressCss css
+        Nothing -> noResult $ "unable to generate syntax highlighting " ++
+                              "for the style named \"" ++ shortName ++ "\""
+  where
+    shortName = foldr const "<blank>" $ words name
