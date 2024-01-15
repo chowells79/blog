@@ -16,9 +16,15 @@ config = defaultConfiguration
 
 staticFiles :: Rules ()
 staticFiles = do
+    -- just copy these over verbatim
     match common $ do
         route idRoute
         compile copyFileCompiler
+
+    -- compress stylesheets
+    match stylesheet $ do
+        route idRoute
+        compile compressCssCompiler
 
     -- If a browser falls back to looking for favicon.ico, it always
     -- looks for it at the top level
@@ -26,8 +32,8 @@ staticFiles = do
         route $ gsubRoute "img/" (const "")
         compile copyFileCompiler
   where
-    common = foldr1 (.||.) [image, font, stylesheet, javascript]
-    font = "fonts/**" .&&. ("**.ttf" .||. "**.otf" .||. "**.woff" .||. "**.woff2")
+    common = image .||. font .||. javascript
+    font = "fonts/**" .&&. ("**.woff" .||. "**.woff2")
     stylesheet = "css/**" .&&. "**.css"
     javascript = "js/**" .&&. "**.js"
     image = "img/**" .&&. ("**.gif" .||. "**.jpg" .||. "**.jpeg" .||. "**.png")
@@ -36,7 +42,7 @@ staticFiles = do
 -- create files required to be at the top-level as metadata for the
 -- build/deploy/hosting systems
 metaFiles :: Rules ()
-metaFiles = match ("meta/**") $ do
+metaFiles = match ("meta/*") $ do
     route $ gsubRoute "meta/" (const "")
     compile copyFileCompiler
 
@@ -49,22 +55,6 @@ indexFile = match "posts/index.md" $ do
         loadAndApplyTemplate "templates/default.html" defaultContext pandoc
 
 
--- creates CSS for loading all three variants of the symbol set
-createMaterialSymbols :: Rules ()
-createMaterialSymbols = create ["css/material-symbols.css"] $ do
-    route idRoute
-    compile $ do
-        tpl <- loadBody "templates/material-symbols.css"
-        empty <- makeItem ()
-        parts <- for ["Sharp", "Outlined", "Rounded"] $ \shape -> do
-            let lshape = map toLower shape
-                context = constField "shape" shape <>
-                          constField "lshape" lshape
-            applyTemplate tpl context empty
-        let whole = concatMap itemBody parts
-        makeItem $ compressCss whole
-
-
 loadTemplates :: Rules ()
 loadTemplates = match "templates/**" $ compile templateCompiler
 
@@ -75,4 +65,3 @@ main = hakyllWith config $ do
     metaFiles
     indexFile
     staticFiles
-    createMaterialSymbols

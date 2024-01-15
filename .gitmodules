@@ -1,0 +1,3 @@
+[submodule "scripts/google-font-download"]
+	path = scripts/google-font-download
+	url = git@github.com:neverpanic/google-font-download.git
