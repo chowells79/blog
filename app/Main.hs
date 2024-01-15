@@ -41,8 +41,8 @@ staticFiles = do
 -- copy files required to be at the top-level as metadata for the
 -- build/deploy/hosting systems
 metaFiles :: Rules ()
-metaFiles = match ("meta/*") $ do
-    route $ gsubRoute "meta/" (const "")
+metaFiles = match "*" $ do
+    route idRoute
     compile copyFileCompiler
 
 
