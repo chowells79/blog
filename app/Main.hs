@@ -8,7 +8,9 @@ import SkylightingCss (skylightingCss)
 config :: Configuration
 config = defaultConfiguration
     { destinationDirectory = "docs"
-    , ignoreFile = \f -> case f of ('.':_) -> False ; _ -> ignoreFile defaultConfiguration f
+    , ignoreFile = \f -> case f of
+                           ('.':_) -> False
+                           _ -> ignoreFile defaultConfiguration f
     , providerDirectory = "content"
     }
 
@@ -58,26 +60,29 @@ loadTemplates :: Rules ()
 loadTemplates = match "templates/**" $ compile templateCompiler
 
 
+loadConfigs :: Rules ()
+loadConfigs = match "config/**" $ compile getResourceString
+
+
 -- currently only magically regenerates the syntax highlighting style,
 -- but there will probably be more
-magicFiles :: Rules ()
-magicFiles = do
-    match "magic/skylighting-style" $ do
-        route $ constRoute "css/skylighting.css"
-        compile $ do
-            style <- getResourceBody
-            let styleName = itemBody style
-                mCss = skylightingCss styleName
-            case mCss of
-                Just css -> makeItem $ compressCss css
-                Nothing -> noResult $
-                    "unable to generate syntax highlighting for " ++ styleName
+skylighting :: Rules ()
+skylighting = create ["css/skylighting.css"] $ do
+    route $ constRoute "css/skylighting.css"
+    compile $ do
+        style <- loadBody "config/skylighting-style"
+        case skylightingCss style of
+            Just css -> makeItem $ compressCss css
+            Nothing -> noResult $
+                "unable to generate syntax highlighting " ++
+                "for the style named \"" ++ style ++ "\""
 
 
 main :: IO ()
 main = hakyllWith config $ do
+    loadConfigs
     loadTemplates
     metaFiles
-    indexFile
     staticFiles
-    magicFiles
+    skylighting
+    indexFile
