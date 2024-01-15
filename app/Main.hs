@@ -3,6 +3,8 @@ module Main where
 
 import Hakyll
 
+import SkylightingCss (skylightingCss)
+
 config :: Configuration
 config = defaultConfiguration
     { destinationDirectory = "docs"
@@ -32,11 +34,11 @@ staticFiles = do
     common = image .||. font .||. javascript
     font = "fonts/**" .&&. ("**.woff" .||. "**.woff2")
     stylesheet = "css/**" .&&. "**.css"
-    javascript = "js/**" .&&. "**.js"
+    javascript = "js/**" .&&. ("**.js" .||. "**.js.map")
     image = "img/**" .&&. ("**.gif" .||. "**.jpg" .||. "**.jpeg" .||. "**.png")
 
 
--- create files required to be at the top-level as metadata for the
+-- copy files required to be at the top-level as metadata for the
 -- build/deploy/hosting systems
 metaFiles :: Rules ()
 metaFiles = match ("meta/*") $ do
@@ -56,9 +58,25 @@ loadTemplates :: Rules ()
 loadTemplates = match "templates/**" $ compile templateCompiler
 
 
+-- currently only magically regenerates the syntax highlighting style,
+-- but there will probably be more
+magicFiles :: Rules ()
+magicFiles = do
+    match "magic/skylighting-style" $ do
+        route $ constRoute "css/skylighting.css"
+        compile $ do
+            style <- getResourceBody
+            let styleName = itemBody style
+                mCss = skylightingCss styleName
+            case mCss of
+                Just css -> makeItem $ compressCss css
+                Nothing -> noResult $
+                    "unable to generate syntax highlighting for " ++ styleName
+
 main :: IO ()
 main = hakyllWith config $ do
     loadTemplates
     metaFiles
     indexFile
     staticFiles
+    magicFiles

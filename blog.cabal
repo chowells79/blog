@@ -6,18 +6,19 @@ extra-doc-files:
 extra-source-files:
 
 executable blog
-    -- .hs or .lhs file containing the Main module.
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
-    -- other-modules:
+    other-modules:    SkylightingCss
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
     build-depends:    base ^>=4.19.0.0,
-                      hakyll ^>= 4.16.0.0
+                      hakyll ^>= 4.16.0.0,
+                      skylighting-core ^>=0.14.1,
+                      skylighting-format-blaze-html ^>= 0.1.1.1
 
     -- Directories containing source files.
     hs-source-dirs:   app
@@ -25,4 +26,4 @@ executable blog
     -- Base language which the package is written in.
     default-language: GHC2021
 
-    ghc-options: -Wall -threaded -with-rtsopts=-N
+    ghc-options:      -Wall -threaded -with-rtsopts=-N
