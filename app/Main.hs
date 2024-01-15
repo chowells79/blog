@@ -73,6 +73,7 @@ magicFiles = do
                 Nothing -> noResult $
                     "unable to generate syntax highlighting for " ++ styleName
 
+
 main :: IO ()
 main = hakyllWith config $ do
     loadTemplates
