@@ -30,7 +30,7 @@ staticFiles = do
     -- If a browser falls back to looking for favicon.ico, it always
     -- looks for it at the top level
     match "img/favicon.ico" $ do
-        route $ gsubRoute "img/" (const "")
+        route $ constRoute "favicon.ico"
         compile copyFileCompiler
   where
     common = image .||. font .||. javascript
