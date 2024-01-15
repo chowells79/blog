@@ -3,9 +3,6 @@ module Main where
 
 import Hakyll
 
-import Data.Char (toLower)
-import Data.Traversable (for)
-
 config :: Configuration
 config = defaultConfiguration
     { destinationDirectory = "docs"

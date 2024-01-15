@@ -5,13 +5,7 @@ build-type:         Simple
 extra-doc-files:
 extra-source-files:
 
-common warnings
-    ghc-options: -Wall
-
 executable blog
-    -- Import common warning flags.
-    import:           warnings
-
     -- .hs or .lhs file containing the Main module.
     main-is:          Main.hs
 
@@ -30,3 +24,5 @@ executable blog
 
     -- Base language which the package is written in.
     default-language: GHC2021
+
+    ghc-options: -Wall -threaded -with-rtsopts=-N
