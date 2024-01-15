@@ -15,18 +15,41 @@ config = defaultConfiguration
 
 
 staticFiles :: Rules ()
-staticFiles =  match pat $ do
-    route idRoute
-    compile copyFileCompiler
+staticFiles = do
+    match common $ do
+        route idRoute
+        compile copyFileCompiler
+
+    -- If a browser falls back to looking for favicon.ico, it always
+    -- looks for it at the top level
+    match "img/favicon.ico" $ do
+        route $ gsubRoute "img/" (const "")
+        compile copyFileCompiler
   where
-    pat = foldr1 (.||.) [image, font, stylesheet, javascript, github]
+    common = foldr1 (.||.) [image, font, stylesheet, javascript]
     font = "fonts/**" .&&. ("**.ttf" .||. "**.otf" .||. "**.woff" .||. "**.woff2")
     stylesheet = "css/**" .&&. "**.css"
     javascript = "js/**" .&&. "**.js"
-    image = "**.gif" .||. "**.jpg" .||. "**.jpeg" .||. "**.png" .||. "favicon.ico"
-    github = ".nojekyll" .||. "CNAME"
+    image = "img/**" .&&. ("**.gif" .||. "**.jpg" .||. "**.jpeg" .||. "**.png")
 
 
+-- create files required to be at the top-level as metadata for the
+-- build/deploy/hosting systems
+metaFiles :: Rules ()
+metaFiles = match ("meta/**") $ do
+    route $ gsubRoute "meta/" (const "")
+    compile copyFileCompiler
+
+
+indexFile :: Rules ()
+indexFile = match "posts/index.md" $ do
+    route $ constRoute "index.html"
+    compile $ do
+        pandoc <- pandocCompiler
+        loadAndApplyTemplate "templates/default.html" defaultContext pandoc
+
+
+-- creates CSS for loading all three variants of the symbol set
 createMaterialSymbols :: Rules ()
 createMaterialSymbols = create ["css/material-symbols.css"] $ do
     route idRoute
@@ -42,15 +65,6 @@ createMaterialSymbols = create ["css/material-symbols.css"] $ do
         makeItem $ compressCss whole
 
 
-markdownToHTML :: Rules ()
-markdownToHTML =
-    match "*.md" $ do
-        route $ setExtension ".html"
-        compile $ do
-            pandoc <- pandocCompiler
-            loadAndApplyTemplate "templates/default.html" defaultContext pandoc
-
-
 loadTemplates :: Rules ()
 loadTemplates = match "templates/**" $ compile templateCompiler
 
@@ -58,6 +72,7 @@ loadTemplates = match "templates/**" $ compile templateCompiler
 main :: IO ()
 main = hakyllWith config $ do
     loadTemplates
-    createMaterialSymbols
-    markdownToHTML
+    metaFiles
+    indexFile
     staticFiles
+    createMaterialSymbols
