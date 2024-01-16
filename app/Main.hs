@@ -9,7 +9,7 @@ config :: Configuration
 config = defaultConfiguration
     { destinationDirectory = "docs"
     , ignoreFile = \f -> case f of
-                           ('.':_) -> False
+                           ('.':x:_) -> x == '#'
                            _ -> ignoreFile defaultConfiguration f
     , providerDirectory = "content"
     }
