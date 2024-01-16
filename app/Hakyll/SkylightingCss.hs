@@ -27,7 +27,8 @@ skylightingCssCompiler :: String -> Compiler (Item String)
 skylightingCssCompiler name =
     case skylightingCss shortName of
         Just css -> makeItem $ compressCss css
-        Nothing -> noResult $ "unable to generate syntax highlighting " ++
-                              "for the style named \"" ++ shortName ++ "\""
+        Nothing -> noResult msg
   where
     shortName = foldr const "<blank>" $ words name
+    msg = "unable to generate syntax highlighting " ++
+          "for the style named \"" ++ shortName ++ "\""
