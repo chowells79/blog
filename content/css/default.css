@@ -1,7 +1,7 @@
-body {
-  font-family: "Roboto", sans-serif;
+html {
+    font-family: Roboto,"Segoe UI",Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
 }
 
-.sourceCode {
-  font-family: "Roboto Mono", monospace;
+code, kbd, samp, pre {
+    font-family: "Roboto Mono",monospace;
 }
