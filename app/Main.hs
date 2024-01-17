@@ -22,11 +22,6 @@ staticFiles = do
         route idRoute
         compile copyFileCompiler
 
-    -- compress stylesheets
-    match stylesheet $ do
-        route idRoute
-        compile compressCssCompiler
-
     -- If a browser falls back to looking for favicon.ico, it always
     -- looks for it at the top level
     match "img/favicon.ico" $ do
@@ -35,7 +30,6 @@ staticFiles = do
   where
     common = image .||. font .||. javascript
     font = "fonts/**" .&&. ("**.woff" .||. "**.woff2")
-    stylesheet = "css/**" .&&. "**.css"
     javascript = "js/**" .&&. ("**.js" .||. "**.js.map")
     image = "img/**" .&&. ("**.gif" .||. "**.jpg" .||. "**.jpeg" .||. "**.png")
 
@@ -64,12 +58,31 @@ loadConfigs :: Rules ()
 loadConfigs = match "config/**" $ compile getResourceString
 
 
--- currently only magically regenerates the syntax highlighting style,
--- but there will probably be more
-skylighting :: Rules ()
-skylighting = create ["css/skylighting.css"] $ do
-    route $ constRoute "css/skylighting.css"
-    compile $ loadBody "config/skylighting-style" >>= skylightingCssCompiler
+buildStylesheets :: Rules ()
+buildStylesheets = do
+    -- compress static stylesheets
+    match "css/**.css" $ do
+        route idRoute
+        compile compressCssCompiler
+
+    -- generate CSS from the configured Skylighting theme
+    create ["css/skylighting.css"] $ do
+        route idRoute
+        compile $ do
+            style <- loadBody "config/skylighting-style"
+            skylightingCssCompiler style
+
+    -- combine all CSS not from other projects. Identifies things from
+    -- other projects as being *.min.css
+    create ["css/local.css"] $ do
+        route idRoute
+        compile $ do
+            -- Prevent cyclic dependency and ignore external content
+            let ignore = "css/local.css" .||. "css/**.min.css"
+                deps = "css/**.css" .&&. complement ignore
+            cssContents <- map itemBody <$> loadAll deps
+            makeItem (compressCss $ concat cssContents)
+
 
 main :: IO ()
 main = hakyllWith config $ do
@@ -77,5 +90,5 @@ main = hakyllWith config $ do
     loadTemplates
     metaFiles
     staticFiles
-    skylighting
+    buildStylesheets
     indexFile
