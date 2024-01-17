@@ -50,19 +50,16 @@ indexFile = match "posts/index.md" $ do
         loadAndApplyTemplate "templates/default.html" defaultContext pandoc
 
 
-loadTemplates :: Rules ()
-loadTemplates = match "templates/**" $ compile templateCompiler
-
-
-loadConfigs :: Rules ()
-loadConfigs = match "config/**" $ compile getResourceString
-
-
 buildStylesheets :: Rules ()
 buildStylesheets = do
-    -- compress static stylesheets
-    match "css/**.css" $ do
+    -- compress local static stylesheets
+    match "css/*.css" $ do
         route idRoute
+        compile compressCssCompiler
+
+    -- compress external stylesheets to css directory
+    match "css/external/*.css" $ do
+        route $ gsubRoute "external/" (const "")
         compile compressCssCompiler
 
     -- generate CSS from the configured Skylighting theme
@@ -72,22 +69,21 @@ buildStylesheets = do
             style <- loadBody "config/skylighting-style"
             skylightingCssCompiler style
 
-    -- combine all CSS not from other projects. Identifies things from
-    -- other projects as being *.min.css
+    -- combine all local CSS into one file
     create ["css/local.css"] $ do
         route idRoute
         compile $ do
-            -- Prevent cyclic dependency and ignore external content
-            let ignore = "css/local.css" .||. "css/**.min.css"
-                deps = "css/**.css" .&&. complement ignore
+            -- Prevent cyclic dependency
+            let deps = "css/*.css" .&&. complement "css/local.css"
             cssContents <- map itemBody <$> loadAll deps
             makeItem (compressCss $ concat cssContents)
 
 
 main :: IO ()
 main = hakyllWith config $ do
-    loadConfigs
-    loadTemplates
+    match "config/**" $ compile getResourceString
+    match "templates/**" $ compile templateCompiler
+
     metaFiles
     staticFiles
     buildStylesheets
