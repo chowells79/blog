@@ -46,20 +46,20 @@ indexFile :: Rules ()
 indexFile = match "posts/index.md" $ do
     route $ constRoute "index.html"
     compile $ do
-        pandoc <- pandocCompiler
-        loadAndApplyTemplate "templates/default.html" defaultContext pandoc
+        doc <- pandocCompiler
+        loadAndApplyTemplate "templates/default.html" defaultContext doc
 
 
 buildStylesheets :: Rules ()
 buildStylesheets = do
+    -- compress external stylesheets to css directory
+    match "css/external/*.css" $ do
+        route $ gsubRoute "/external/" (const "/")
+        compile compressCssCompiler
+
     -- compress local static stylesheets
     match "css/*.css" $ do
         route idRoute
-        compile compressCssCompiler
-
-    -- compress external stylesheets to css directory
-    match "css/external/*.css" $ do
-        route $ gsubRoute "external/" (const "")
         compile compressCssCompiler
 
     -- generate CSS from the configured Skylighting theme
@@ -73,7 +73,9 @@ buildStylesheets = do
     create ["css/local.css"] $ do
         route idRoute
         compile $ do
-            -- Prevent cyclic dependency
+            -- Prevent cyclic dependency. Doesn't bind external css
+            -- because loading uses identifiers as matched, not as
+            -- deployed with routes.
             let deps = "css/*.css" .&&. complement "css/local.css"
             cssContents <- map itemBody <$> loadAll deps
             makeItem (compressCss $ concat cssContents)
