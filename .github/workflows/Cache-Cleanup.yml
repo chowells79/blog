@@ -14,7 +14,7 @@ jobs:
       - name: Cleanup
         # env.GH_TOKEN is required to run gh extension
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           gh extension install actions/gh-actions-cache
 
