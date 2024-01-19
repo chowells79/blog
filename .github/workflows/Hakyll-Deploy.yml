@@ -1,4 +1,4 @@
-name: deploy
+name: Hakyll build and deploy to Pages
 on:
   push:
     branches: [main]
