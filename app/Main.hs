@@ -5,10 +5,6 @@ import Hakyll
 
 import Hakyll.SkylightingCss (skylightingCssCompiler)
 
-config :: Configuration
-config = defaultConfiguration { providerDirectory = "content"}
-
-
 staticFiles :: Rules ()
 staticFiles = do
     -- just copy these over verbatim
@@ -77,6 +73,7 @@ buildStylesheets = do
 
 main :: IO ()
 main = do
+    let config = defaultConfiguration { providerDirectory = "content"}
     hakyllWith config $ do
         match "config/**" $ compile getResourceString
         match "templates/**" $ compile templateCompiler
