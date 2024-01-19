@@ -38,11 +38,11 @@ jobs:
           key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
           restore-keys: ${{ env.key }}-
 
-      - name: Install dependencies
+      - name: Build dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: cabal build all --only-dependencies
 
-      - name: Save cached dependencies
+      - name: Save built dependencies to cache
         uses: actions/cache/save@v3
         if: steps.cache.outputs.cache-hit != 'true'
         with:
