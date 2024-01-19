@@ -27,10 +27,10 @@ staticFiles = do
         route $ constRoute "favicon.ico"
         compile copyFileCompiler
   where
-    common = image .||. font .||. javascript
-    font = "fonts/**" .&&. ("**.woff" .||. "**.woff2")
-    javascript = "js/**" .&&. ("**.js" .||. "**.js.map")
-    image = "img/**" .&&. ("**.gif" .||. "**.jpg" .||. "**.jpeg" .||. "**.png")
+    common = images .||. fonts .||. scripts
+    fonts = "fonts/**" .&&. ("**.woff" .||. "**.woff2")
+    scripts = "js/**" .&&. ("**.js" .||. "**.js.map")
+    images = "img/**" .&&. ("**.gif" .||. "**.jpg" .||. "**.png")
 
 
 -- copy files required to be at the top-level as metadata for the
@@ -51,32 +51,28 @@ indexFile = match "posts/index.md" $ do
 
 buildStylesheets :: Rules ()
 buildStylesheets = do
-    -- compress external stylesheets to css directory
-    match "css/external/*.css" $ do
-        route $ gsubRoute "/external/" (const "/")
-        compile compressCssCompiler
-
-    -- compress local static stylesheets
+    -- compress external stylesheets to deploy directory
     match "css/*.css" $ do
         route idRoute
         compile compressCssCompiler
 
     -- generate CSS from the configured Skylighting theme
-    create ["css/skylighting.css"] $ do
-        route idRoute
+    create ["css/local/skylighting.css"] $ do
+        route $ constRoute "css/skylighting.css"
         compile $ do
             style <- loadBody "config/skylighting-style"
             skylightingCssCompiler style
+
+    -- compress local static stylesheets
+    match "css/local/*.css" $ do
+        route $ gsubRoute "local/" (const "")
+        compile compressCssCompiler
 
     -- combine all local CSS into one file
     create ["css/local.css"] $ do
         route idRoute
         compile $ do
-            -- Prevent cyclic dependency. Doesn't bind external css
-            -- because loading uses identifiers as matched, not as
-            -- deployed with routes.
-            let deps = "css/*.css" .&&. complement "css/local.css"
-            cssContents <- map itemBody <$> loadAll deps
+            cssContents <- map itemBody <$> loadAll "css/local/*.css"
             makeItem (compressCss $ concat cssContents)
 
 
