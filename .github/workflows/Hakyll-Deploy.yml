@@ -1,7 +1,9 @@
 name: Hakyll build and deploy to Pages
 on:
-  push:
-    branches: [main]
+  - push:
+      branches:
+        - 'main'
+  - workflow-dispatch
 
 concurrency:
   group: deploy-main
