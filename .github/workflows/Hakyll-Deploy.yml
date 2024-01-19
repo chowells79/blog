@@ -5,8 +5,8 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: deploy-main
-  cancel-in-progress: true
+  group: main
+  cancel-in-progress: false
 
 jobs:
   build:

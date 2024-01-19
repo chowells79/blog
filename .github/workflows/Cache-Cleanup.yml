@@ -1,6 +1,10 @@
 name: Clean up package cache
 on: workflow_dispatch
 
+concurrency:
+  group: main
+  cancel-in-progress: false
+
 jobs:
   cleanup:
     runs-on: ubuntu-latest
