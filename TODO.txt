@@ -1,0 +1,15 @@
+* Add configuration flag to minimize Hakyll dependencies on CI but not
+  locally
+
+* arbitrary CSS bundles
+  * automatic based on directory?
+  * specific metadata files?
+
+* system for mapping theme names in files to skylighting CSS
+* system for mapping full themes in files to skylighting CSS
+
+* break out hakyll:core sublibrary that doesn't have configuration or
+  Main functionality
+  * break out separate components in this project to make use of that
+  * submit upstream
+
