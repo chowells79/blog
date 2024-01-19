@@ -6,12 +6,7 @@ import Hakyll
 import Hakyll.SkylightingCss (skylightingCssCompiler)
 
 config :: Configuration
-config = defaultConfiguration
-    { ignoreFile = \f -> case f of
-                           ('.':x:_) -> x == '#'
-                           _ -> ignoreFile defaultConfiguration f
-    , providerDirectory = "content"
-    }
+config = defaultConfiguration { providerDirectory = "content"}
 
 
 staticFiles :: Rules ()
@@ -36,17 +31,21 @@ staticFiles = do
 -- copy files required to be at the top-level as metadata for the
 -- build/deploy/hosting systems
 metaFiles :: Rules ()
-metaFiles = match "*" $ do
-    route idRoute
-    compile copyFileCompiler
+metaFiles = do
+    match "*" $ do
+        route idRoute
+        compile copyFileCompiler
 
 
-indexFile :: Rules ()
-indexFile = match "posts/index.md" $ do
-    route $ constRoute "index.html"
-    compile $ do
-        doc <- pandocCompiler
-        loadAndApplyTemplate "templates/default.html" defaultContext doc
+-- build HTML files that github pages treat specially
+specialHTML :: Rules ()
+specialHTML = do
+    let (&.) = composeRoutes
+        tpl = "templates/default.html"
+        applyDefault = loadAndApplyTemplate tpl defaultContext
+    match ("posts/index.md" .||. "posts/404.md") $ do
+        route $ gsubRoute "posts/" (const "") &. setExtension "html"
+        compile $ pandocCompiler >>= applyDefault
 
 
 buildStylesheets :: Rules ()
@@ -77,11 +76,12 @@ buildStylesheets = do
 
 
 main :: IO ()
-main = hakyllWith config $ do
-    match "config/**" $ compile getResourceString
-    match "templates/**" $ compile templateCompiler
+main = do
+    hakyllWith config $ do
+        match "config/**" $ compile getResourceString
+        match "templates/**" $ compile templateCompiler
 
-    metaFiles
-    staticFiles
-    buildStylesheets
-    indexFile
+        metaFiles
+        staticFiles
+        buildStylesheets
+        specialHTML
