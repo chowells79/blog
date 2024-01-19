@@ -66,6 +66,7 @@ jobs:
     permissions:
       pages: write
       id-token: write
+      actions: read
 
     environment:
       name: github-pages
