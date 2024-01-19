@@ -1,0 +1,4 @@
+packages: blog.cabal
+
+package hakyll
+        flags: -previewserver -watchserver -checkexternal
