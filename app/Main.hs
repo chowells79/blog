@@ -7,8 +7,7 @@ import Hakyll.SkylightingCss (skylightingCssCompiler)
 
 config :: Configuration
 config = defaultConfiguration
-    { destinationDirectory = "docs"
-    , ignoreFile = \f -> case f of
+    { ignoreFile = \f -> case f of
                            ('.':x:_) -> x == '#'
                            _ -> ignoreFile defaultConfiguration f
     , providerDirectory = "content"
