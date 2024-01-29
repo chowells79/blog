@@ -24,8 +24,8 @@ jobs:
 
       - name: Configure build
         run: |
-          cabal configure --disable-documentation
-          cabal build --dry-run
+          cabal --project-file=ci.project configure --disable-documentation
+          cabal --project-file=ci.project build --dry-run
         # The last step generates dist-newstyle/cache/plan.json for the cache key
 
       - name: Restore cached dependencies
