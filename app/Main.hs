@@ -24,23 +24,18 @@ staticFiles = do
     images = "img/**" .&&. ("**.gif" .||. "**.jpg" .||. "**.png")
 
 
--- copy files required to be at the top-level as metadata for the
--- build/deploy/hosting systems
-metaFiles :: Rules ()
-metaFiles = do
-    match "*" $ do
+-- Generate files github treats specially at the top level
+specialFiles :: Rules ()
+specialFiles = do
+    match "CNAME" $ do
         route idRoute
         compile copyFileCompiler
 
-
--- build HTML files that github pages treat specially
-specialHTML :: Rules ()
-specialHTML = do
-    let (&.) = composeRoutes
-        tpl = "templates/default.html"
+    let tpl = "templates/default.html"
         applyDefault = loadAndApplyTemplate tpl defaultContext
-    match ("posts/index.md" .||. "posts/404.md") $ do
-        route $ gsubRoute "posts/" (const "") &. setExtension "html"
+
+    match ("index.md" .||. "404.md") $ do
+        route $ setExtension "html"
         compile $ pandocCompiler >>= applyDefault
 
 
@@ -78,7 +73,6 @@ main = do
         match "config/**" $ compile getResourceString
         match "templates/**" $ compile templateCompiler
 
-        metaFiles
+        specialFiles
         staticFiles
         buildStylesheets
-        specialHTML
