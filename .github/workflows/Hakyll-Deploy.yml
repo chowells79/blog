@@ -40,7 +40,7 @@ jobs:
 
       - name: Build dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: cabal build all --only-dependencies
+        run: cabal --project-file=ci.project build all --only-dependencies
 
       - name: Save built dependencies to cache
         uses: actions/cache/save@v3
@@ -50,7 +50,7 @@ jobs:
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Create static content
-        run: cabal run blog build
+        run: cabal --project-file=ci.project run blog build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v2
