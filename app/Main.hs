@@ -2,7 +2,8 @@
 module Main where
 
 import Data.Foldable (forM_)
-import Data.List (nub)
+import Data.List (inits, intercalate, nub)
+import Data.List.Split (splitOn)
 import GHC.Stack (HasCallStack)
 
 import Hakyll
@@ -56,22 +57,21 @@ buildStylesheets = do
             style <- itemBody <$> getResourceString
             skylightingCssCompiler style
 
-    -- create concatenated CSS from subdirectory contents. (this is
-    -- non-recursive due to not wanting to work really hard to bypass
-    -- Hakyll limitations)
-    let pat = "css/*/*" .&&. both
+    -- create concatenated CSS from subdirectory contents.
+    let pat = "css/**/*" .&&. both
     dep <- makePatternDependency pat
     rulesExtraDependencies [dep] $ do
         idents <- getMatches pat
         let extractParent = maybe
                             (error "impossible stylesheet subdirectory mismatch")
                             (foldr const (error "impossible stylesheet subdirectory match"))
-            dirs = nub . map (extractParent . capture "**/*") $ idents
+            multiply = map (intercalate "/") . drop 2 . inits . splitOn "/"
+            dirs = nub . concatMap (multiply . extractParent . capture "**/*") $ idents
         forM_ dirs $ \dirName -> do
+            let dirPattern = fromGlob (dirName ++ "/*") .&&. both
             create [ fromFilePath $ dirName ++ ".css" ] $ do
                 route idRoute
                 compile $ do
-                    let dirPattern = fromGlob (dirName ++ "/*") .&&. both
                     cssContents <- map itemBody <$> loadAll dirPattern
                     makeItem . compressCss . concat $ cssContents
   where
