@@ -31,7 +31,7 @@ jobs:
         # The last step generates dist-newstyle/cache/plan.json for the cache key
 
       - name: Restore cached dependencies
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: cache
         env:
           key: ${{ runner.os }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}
@@ -45,7 +45,7 @@ jobs:
         run: cabal --project-file=ci.project build all --only-dependencies
 
       - name: Save built dependencies to cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: steps.cache.outputs.cache-hit != 'true'
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
