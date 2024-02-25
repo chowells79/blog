@@ -53,7 +53,7 @@ jobs:
         run: cabal --project-file=ci.project run blog build
 
       - name: Drop the git version into the generated site
-        run: git show -s --format="%ci %H" > _site/GIT_VERSION
+        run: git show -s --format='{"commit":"%H","date":"%ci"}' > _site/git_version.json
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v2
