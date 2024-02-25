@@ -1,15 +1,7 @@
-* Add configuration flag to minimize Hakyll dependencies on CI but not
-  locally
+* Build basic layout for the site
 
-* arbitrary CSS bundles
-  * automatic based on directory?
-  * specific metadata files?
+* Hook up turning post files into blog entries, wired together.
 
-* system for mapping theme names in files to skylighting CSS
-* system for mapping full themes in files to skylighting CSS
+* Modify the program to support additional command line arguments
 
-* break out hakyll:core sublibrary that doesn't have configuration or
-  Main functionality
-  * break out separate components in this project to make use of that
-  * submit upstream
-
+* Add an additional command line argument that generates skeleton posts
