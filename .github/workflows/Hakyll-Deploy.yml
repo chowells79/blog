@@ -58,7 +58,7 @@ jobs:
         run: git show -s --format='{"commit":"%H","date":"%ci"}' > _site/git_version.json
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
 
   deploy:
     name: Deploy Pages artifact to production
