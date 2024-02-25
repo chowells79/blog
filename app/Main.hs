@@ -1,11 +1,14 @@
 {-# Language OverloadedStrings #-}
 module Main where
 
-import Hakyll
+import Data.Foldable (forM_)
+import Data.List (nub)
+import GHC.Stack (HasCallStack)
 
+import Hakyll
 import Hakyll.SkylightingCss (skylightingCssCompiler)
 
-staticFiles :: Rules ()
+staticFiles :: HasCallStack => Rules ()
 staticFiles = do
     -- just copy these over verbatim
     match common $ do
@@ -25,7 +28,7 @@ staticFiles = do
 
 
 -- Generate files github treats specially at the top level
-specialFiles :: Rules ()
+specialFiles :: HasCallStack => Rules ()
 specialFiles = do
     match "CNAME" $ do
         route idRoute
@@ -39,38 +42,47 @@ specialFiles = do
         compile $ pandocCompiler >>= applyDefault
 
 
-buildStylesheets :: Rules ()
+buildStylesheets :: HasCallStack => Rules ()
 buildStylesheets = do
     -- compress external stylesheets to deploy directory
-    match "css/*.css" $ do
+    match ("css/**" .&&. css) $ do
         route idRoute
         compile compressCssCompiler
 
-    -- generate CSS from the configured Skylighting theme
-    create ["css/local/skylighting.css"] $ do
-        route $ constRoute "css/skylighting.css"
+    -- generate CSS from Skylighting files
+    match ("css/**" .&&. sky) $ do
+        route $ setExtension "css"
         compile $ do
-            style <- loadBody "config/skylighting-style"
+            style <- itemBody <$> getResourceString
             skylightingCssCompiler style
 
-    -- compress local static stylesheets
-    match "css/local/*.css" $ do
-        route $ gsubRoute "local/" (const "")
-        compile compressCssCompiler
+    -- create concatenated CSS from subdirectory contents. (this is
+    -- non-recursive due to not wanting to work really hard to bypass
+    -- Hakyll limitations)
+    let pat = "css/*/*" .&&. both
+    dep <- makePatternDependency pat
+    rulesExtraDependencies [dep] $ do
+        idents <- getMatches pat
+        let extractParent = maybe
+                            (error "impossible stylesheet subdirectory mismatch")
+                            (foldr const (error "impossible stylesheet subdirectory match"))
+            dirs = nub . map (extractParent . capture "**/*") $ idents
+        forM_ dirs $ \dirName -> do
+            create [ fromFilePath $ dirName ++ ".css" ] $ do
+                route idRoute
+                compile $ do
+                    let dirPattern = fromGlob (dirName ++ "/*") .&&. both
+                    cssContents <- map itemBody <$> loadAll dirPattern
+                    makeItem . compressCss . concat $ cssContents
+  where
+    css = "**.css"
+    sky = "**.skylighting"
+    both = css .||. sky
 
-    -- combine all local CSS into one file
-    create ["css/local.css"] $ do
-        route idRoute
-        compile $ do
-            cssContents <- map itemBody <$> loadAll "css/local/*.css"
-            makeItem (compressCss $ concat cssContents)
-
-
-main :: IO ()
+main :: HasCallStack => IO ()
 main = do
     let config = defaultConfiguration { providerDirectory = "content"}
     hakyllWith config $ do
-        match "config/**" $ compile getResourceString
         match "templates/**" $ compile templateCompiler
 
         specialFiles
