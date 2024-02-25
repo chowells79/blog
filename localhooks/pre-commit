@@ -1,0 +1,20 @@
+#! /usr/bin/env sh
+
+# set -x
+set -e
+
+
+TMP1=$(mktemp)
+trap 'rm -f "$TMP1"' EXIT
+
+TMP2=$(mktemp)
+trap 'rm -f "$TMP1" "$TMP2"' EXIT
+
+grep index-state cabal.project.freeze > "$TMP1"
+grep index-state ci.project.freeze > "$TMP2"
+
+if ! cmp -s "$TMP1" "$TMP2"
+then
+  echo "Mismatched index states, please correct them before committing."
+  exit 1
+fi
