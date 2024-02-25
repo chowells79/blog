@@ -52,6 +52,9 @@ jobs:
       - name: Create static content
         run: cabal --project-file=ci.project run blog build
 
+      - name: Drop the git version into the generated site
+        run: git show -s --format="%ci %H" > _site/GIT_VERSION
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v2
 
