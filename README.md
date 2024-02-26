@@ -4,10 +4,8 @@ There really isn't much here. Carry on!
 
 * Install and set the expected tool versions using ghcup.
   ```
-  ghcup install ghc 9.8.1
-  ghcup set ghc 9.8.1
-  ghcup install cabal 3.10.2.1
-  ghcup set cabal 3.10.2.1
+  ghcup install ghc --set 9.8.1
+  ghcup install cabal --set 3.10.2.1
   ```
 
 * (Optionally) install the local git pre-commit hook
