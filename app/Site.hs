@@ -47,42 +47,42 @@ specialFiles = do
 
 
 buildStylesheets :: HasCallStack => Rules ()
-buildStylesheets = do
-    -- compress external stylesheets to deploy directory
-    match "css/**.css" $ do
+buildStylesheets = version "css" $ do
+    -- compress static stylesheets to deploy directory
+    let cssFiles = "css/**.css"
+    match cssFiles $ do
         route idRoute
         compile compressCssCompiler
 
     -- generate CSS from Skylighting files
-    match "css/**.skylighting" $ do
+    let skyFiles = "css/**.skylighting"
+    match skyFiles $ do
         route $ setExtension "css"
         compile $ do
             style <- itemBody <$> getResourceString
             skylightingCssCompiler style
 
+    ------------------------------------------------------
     -- create concatenated CSS from subdirectory contents.
 
-     -- match all files in subdirectories
-    let pat = "css/**/*"
+    -- match all style *files* in subdirectories
+    let pat = cssFiles .||. skyFiles
     dep <- makePatternDependency pat
     rulesExtraDependencies [dep] $ do
         idents <- getMatches pat
-        let extractParent = maybe
-                            (error "impossible stylesheet subdirectory mismatch")
-                            (foldr const (error "impossible stylesheet subdirectory match"))
+        let nothingErr = error "impossible stylesheet subdirectory mismatch"
+            emptyErr = error "impossible stylesheet subdirectory match"
+            extractParent = maybe nothingErr $ foldr const emptyErr
             -- generate all subdirectories as individual entries in
             -- case there are some that contain no files
             multiply = map (intercalate "/") . drop 2 . inits . splitOn "/"
             dirs = nub . concatMap (multiply . extractParent . capture "**/*") $ idents
         forM_ dirs $ \dirName -> do
-            let dirPattern = fromGlob $ dirName ++ "/*"
             create [ fromFilePath $ dirName ++ ".css" ] $ do
                 route idRoute
                 compile $ do
-                    -- Loads all compiled resources in the chosen
-                    -- directory. As long as nothing outside this
-                    -- action compiles resources under "css/", this is
-                    -- fine.
+                    -- loads *compiled* css resources in the chosen directory
+                    let dirPattern = hasVersion "css" .&&. fromGlob (dirName ++ "/*")
                     cssContents <- map itemBody <$> loadAll dirPattern
                     makeItem . compressCss . concat $ cssContents
 
