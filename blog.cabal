@@ -18,6 +18,7 @@ executable blog
 
     -- Other library packages from which modules are imported.
     build-depends:    base ^>=4.19.0.0,
+                      lens ^>= 5.2.3,
                       hakyll ^>= 4.16.0.0,
                       optparse-applicative ^>= 0.18.1.0,
                       skylighting-core ^>=0.14.1,
