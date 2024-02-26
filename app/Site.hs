@@ -1,8 +1,7 @@
 {-# Language OverloadedStrings #-}
 module Site
   ( fullSite
-  )
-where
+  ) where
 
 import Data.Foldable (forM_)
 import Data.List (inits, intercalate, nub)
