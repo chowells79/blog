@@ -36,8 +36,8 @@ commandParser = subparser $ foldMap toCommand commands
   where
     toCommand (a, b, c) = command a $ info (helper <*> b) c
     commands = blogCommands ++ hakyllCommands
-    hakyllCommands = over (traverse . _2) (fmap Hakyll) $
-        defaultCommands defaultConfiguration
+    hakyllCommands = over (traverse . _2) (fmap Hakyll) rawCommands
+    rawCommands = defaultCommands defaultConfiguration
     blogCommands =
         [ ( "echo"
           , Echo . intercalate " " <$> many (argument str mempty)

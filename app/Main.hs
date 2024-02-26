@@ -17,8 +17,7 @@ runCommand verbose c = case c of
         when verbose $ putStrLn "Doing an echo"
         putStrLn str
     Hakyll command -> do
-        let config = defaultConfiguration
-                     { providerDirectory = "content"}
+        let config = defaultConfiguration { providerDirectory = "content" }
             hOpts = Options verbose command
         hakyllWithArgs config hOpts fullSite
 
