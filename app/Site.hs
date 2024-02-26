@@ -49,38 +49,42 @@ specialFiles = do
 buildStylesheets :: HasCallStack => Rules ()
 buildStylesheets = do
     -- compress external stylesheets to deploy directory
-    match ("css/**" .&&. css) $ do
+    match "css/**.css" $ do
         route idRoute
         compile compressCssCompiler
 
     -- generate CSS from Skylighting files
-    match ("css/**" .&&. sky) $ do
+    match "css/**.skylighting" $ do
         route $ setExtension "css"
         compile $ do
             style <- itemBody <$> getResourceString
             skylightingCssCompiler style
 
     -- create concatenated CSS from subdirectory contents.
-    let pat = "css/**/*" .&&. both
+
+     -- match all files in subdirectories
+    let pat = "css/**/*"
     dep <- makePatternDependency pat
     rulesExtraDependencies [dep] $ do
         idents <- getMatches pat
         let extractParent = maybe
                             (error "impossible stylesheet subdirectory mismatch")
                             (foldr const (error "impossible stylesheet subdirectory match"))
+            -- generate all subdirectories as individual entries in
+            -- case there are some that contain no files
             multiply = map (intercalate "/") . drop 2 . inits . splitOn "/"
             dirs = nub . concatMap (multiply . extractParent . capture "**/*") $ idents
         forM_ dirs $ \dirName -> do
-            let dirPattern = fromGlob (dirName ++ "/*") .&&. both
+            let dirPattern = fromGlob $ dirName ++ "/*"
             create [ fromFilePath $ dirName ++ ".css" ] $ do
                 route idRoute
                 compile $ do
+                    -- Loads all compiled resources in the chosen
+                    -- directory. As long as nothing outside this
+                    -- action compiles resources under "css/", this is
+                    -- fine.
                     cssContents <- map itemBody <$> loadAll dirPattern
                     makeItem . compressCss . concat $ cssContents
-  where
-    css = "**.css"
-    sky = "**.skylighting"
-    both = css .||. sky
 
 
 fullSite :: HasCallStack => Rules ()
