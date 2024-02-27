@@ -3,6 +3,7 @@ module Parser
   , BlogCommand(..)
   , blogOptions
   , getOptions
+  , hakyllConfig
   ) where
 
 
@@ -10,7 +11,7 @@ import Data.List (intercalate)
 import GHC.Stack (HasCallStack)
 
 import Hakyll.Main (Command, defaultCommands)
-import Hakyll.Core.Configuration (defaultConfiguration)
+import Hakyll.Core.Configuration (Configuration(..), defaultConfiguration)
 
 import Control.Lens hiding (argument)
 
@@ -26,6 +27,9 @@ blogOptions :: (Bool -> BlogCommand -> r) -> BlogOptions -> r
 blogOptions f (BlogOptions v c) = f v c
 
 
+hakyllConfig :: Configuration
+hakyllConfig = defaultConfiguration { providerDirectory = "content" }
+
 ---------------------------------------------------------------------
 -- logic for remaining definitions adapted from Hakyll definitions --
 ---------------------------------------------------------------------
@@ -36,8 +40,8 @@ commandParser = subparser $ foldMap toCommand commands
   where
     toCommand (a, b, c) = command a $ info (helper <*> b) c
     commands = blogCommands ++ hakyllCommands
-    hakyllCommands = over (traverse . _2) (fmap Hakyll) rawCommands
-    rawCommands = defaultCommands defaultConfiguration
+    hakyllCommands = rawCommands & mapped . _2 . mapped %~ Hakyll
+    rawCommands = defaultCommands hakyllConfig
     blogCommands =
         [ ( "echo"
           , Echo . intercalate " " <$> many (argument str mempty)
