@@ -72,19 +72,18 @@ buildStylesheets = version "css" $ do
         idents <- getMatches pat
         let nothingErr = error "impossible stylesheet subdirectory mismatch"
             emptyErr = error "impossible stylesheet subdirectory match"
-            extractParent = maybe nothingErr $ foldr const emptyErr
+            extractParents = maybe nothingErr $ foldr const emptyErr
             -- generate all subdirectories as individual entries in
             -- case there are some that contain no files
             multiply = map (intercalate "/") . drop 2 . inits . splitOn "/"
-            dirs = nub . concatMap (multiply . extractParent . capture "**/*") $ idents
+            dirs = nub . concatMap (multiply . extractParents . capture "**/*") $ idents
         forM_ dirs $ \dirName -> do
             create [ fromFilePath $ dirName ++ ".css" ] $ do
                 route idRoute
                 compile $ do
                     -- loads *compiled* css resources in the chosen directory
-                    let dirPattern = hasVersion "css" .&&. fromGlob (dirName ++ "/*")
-                    cssContents <- map itemBody <$> loadAll dirPattern
-                    makeItem . compressCss . concat $ cssContents
+                    let dirPat = hasVersion "css" .&&. fromGlob (dirName ++ "/*")
+                    makeItem . compressCss . concatMap itemBody =<< loadAll dirPat
 
 
 fullSite :: HasCallStack => Rules ()
