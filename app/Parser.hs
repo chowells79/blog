@@ -30,6 +30,8 @@ blogOptions f (BlogOptions v c) = f v c
 hakyllConfig :: Configuration
 hakyllConfig = defaultConfiguration { providerDirectory = "content" }
 
+
+
 ---------------------------------------------------------------------
 -- logic for remaining definitions adapted from Hakyll definitions --
 ---------------------------------------------------------------------
