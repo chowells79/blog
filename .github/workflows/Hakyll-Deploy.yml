@@ -55,7 +55,7 @@ jobs:
         run: cabal --project-file=ci.project run blog build
 
       - name: Drop version info into the generated site
-        run: git show -s --format='{"repository":"${{ github.server_url }}/${{ github.repository }}","commit":"%H","date":"%ci"}' > _site/site_version.json
+        run: git show -s --format='{"repository":"${{ github.server_url }}/${{ github.repository }}","ghc-version":"'$(ghc --numeric-version)'","cabal-version":"'$(cabal --numeric-version)'","commit":"%H","date":"%ci"}' > _site/site_version.json
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
