@@ -1,3 +1,7 @@
+* Move site_version.json generation into blog
+
+* See if refreeze_dependencies can be moved into blog
+
 * Build basic layout for the site
 
 * Hook up turning post files into blog entries, wired together.
