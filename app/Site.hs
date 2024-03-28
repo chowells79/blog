@@ -8,12 +8,14 @@ import Data.List (inits, intercalate, nub)
 import Data.List.Split (splitOn)
 import GHC.Stack (HasCallStack)
 
+import SiteVersion
+
 import Hakyll
 import Hakyll.SkylightingCss (skylightingCssCompiler)
 
 
-staticFiles :: HasCallStack => Rules ()
-staticFiles = do
+copiedFiles :: HasCallStack => Rules ()
+copiedFiles = do
     -- just copy these over verbatim
     match common $ do
         route idRoute
@@ -31,7 +33,7 @@ staticFiles = do
     images = "img/**" .&&. ("**.gif" .||. "**.jpg" .||. "**.png")
 
 
--- Generate files github treats specially at the top level
+-- Generate various one-off files.
 specialFiles :: HasCallStack => Rules ()
 specialFiles = do
     match "CNAME" $ do
@@ -44,6 +46,10 @@ specialFiles = do
     match ("index.md" .||. "404.md") $ do
         route $ setExtension "html"
         compile $ pandocCompiler >>= applyDefault
+
+    create ["site_version.json"] $ do
+        route idRoute
+        compile $ makeItem =<< recompilingUnsafeCompiler lookupSiteVersion
 
 
 buildStylesheets :: HasCallStack => Rules ()
@@ -91,5 +97,5 @@ fullSite = do
     match "templates/**" $ compile templateCompiler
 
     specialFiles
-    staticFiles
+    copiedFiles
     buildStylesheets

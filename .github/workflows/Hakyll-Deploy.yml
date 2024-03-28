@@ -52,10 +52,10 @@ jobs:
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Create static content
+        env:
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: cabal --project-file=ci.project run blog build
-
-      - name: Drop version info into the generated site
-        run: git show -s --format='{"repository":"${{ github.server_url }}/${{ github.repository }}","commit":"%H","date":"%ci","ghc-version":"'$(ghc --numeric-version)'","cabal-version":"'$(cabal --numeric-version)'"}' > _site/site_version.json
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
