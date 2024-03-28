@@ -15,15 +15,15 @@ lookupSiteVersion = do
     let repoUrl = liftA2 (\s p -> s ++ "/" ++ p) gsu gr
         repoPart = foldMap (\x -> [("repository", x)]) repoUrl
 
-    let rp c p i = trim <$> readProcess c p i
+    let run c p = trim <$> readProcess c p ""
         trim = dropWhile isSpace . dropWhileEnd isSpace
 
-    gitInfo <- rp "git" ["show", "-s", "--format=%H %ci"] ""
+    gitInfo <- run "git" ["show", "-s", "--format=%H %ci"]
     let gitHashPart = [("commit", takeWhile (/= ' ') gitInfo)]
         gitDatePart = [("date", drop 1 . dropWhile (/= ' ') $ gitInfo)]
 
-    ghcVersion <- rp "ghc" ["--numeric-version"] ""
-    cabalVersion <- rp "cabal" ["--numeric-version"] ""
+    ghcVersion <- run "ghc" ["--numeric-version"]
+    cabalVersion <- run "cabal" ["--numeric-version"]
     let ghcPart = [("ghc-version", ghcVersion)]
         cabalPart = [("cabal-version", cabalVersion)]
 
