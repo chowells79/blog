@@ -13,7 +13,7 @@ lookupSiteVersion = do
     gsu <- lookupEnv "GITHUB_SERVER_URL"
     gr <- lookupEnv "GITHUB_REPOSITORY"
     let repoUrl = liftA2 (\s p -> s ++ "/" ++ p) gsu gr
-        repoPart = foldMap (\x -> [("respository", x)]) repoUrl
+        repoPart = foldMap (\x -> [("repository", x)]) repoUrl
 
     let rp c p i = trim <$> readProcess c p i
         trim = dropWhile isSpace . dropWhileEnd isSpace
